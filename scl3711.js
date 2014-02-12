@@ -367,7 +367,7 @@ usbSCL3711.prototype.acr122_authentication = function(block, loc, type, cb) {
 };
 
 /* For Mifare Classic only. The 'block' is in 16-bytes unit. */
-usbSCL3711.prototype.authentication = function(block, cb) {
+usbSCL3711.prototype.publicAuthentication = function(block, cb) {
   var self = this;
   var callback = cb;
   var sector = Math.floor(block / 4);
@@ -400,8 +400,37 @@ usbSCL3711.prototype.authentication = function(block, cb) {
   if (self.detected_tag == "Mifare Classic 1K") {
     if (self.dev && self.dev.acr122) {
       if (self.authed_sector != sector) {
-        console.log("[DEBUG] Authenticate sector " + sector);
+        console.log("[DEBUG] Public Authenticate sector " + sector);
         try_keyA(0);
+      } else {
+        if (callback) callback(0, null);
+      }
+    } else {
+      if (callback) callback(0, null);
+    }
+  } else {
+    if (callback) callback(0, null);
+  }
+};
+
+/* For Mifare Classic only. The 'block' is in 16-bytes unit. */
+usbSCL3711.prototype.privateAuthentication = function(block, key, cb) {
+  var self = this;
+  var callback = cb;
+  var sector = Math.floor(block / 4);
+
+  if (self.detected_tag == "Mifare Classic 1K") {
+    if (self.dev && self.dev.acr122) {
+      if (self.authed_sector != sector) {
+        console.log("[DEBUG] Private Authenticate sector " + sector);
+        self.acr122_load_authentication_keys(key, 1,
+            function(rc, data) {
+          self.acr122_authentication(block, 1, 0x61/*KEY B*/,
+              function(rc, data) {
+            if (rc) { console.log("KEY B AUTH ERROR"); return rc; }
+            if (callback) callback(rc, data);
+          });
+        });
       } else {
         if (callback) callback(0, null);
       }
