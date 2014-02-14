@@ -44,14 +44,14 @@ function NFC() {
   function wait_for_passive_target(device, cb, timeout) {
     if (timeout == undefined) timeout = 9999999999;
 
-    device.wait_for_passive_target(timeout, function(rc, tag_type) {
+    device.wait_for_passive_target(timeout, function(rc, tag_type, tagId) {
       if (rc) {
         console.log("NFC.wait_for_passive_target() = " + rc);
         cb(rc);
         return rc;
       }
-      console.log("[DEBUG] nfc.wait_for_passive_target: " + tag_type);
-      cb(rc, tag_type);
+      console.log("[DEBUG] nfc.wait_for_passive_target: " + tag_type + " with ID: " +tagId);
+      cb(rc, tag_type, tagId);
     });
   }
 
@@ -145,6 +145,31 @@ function NFC() {
     },
 
     /*
+     * Return tagId as soon as a Tag is detected.
+     */
+    "wait_for_tag": function(device, timeout, cb) {
+        var callback = cb;
+
+        var loop = function(timeout) {
+
+            wait_for_passive_target(device, function(rc, tag_type, id) {
+                if(rc >= 0) {
+                    callback(tag_type, id);
+                }
+                else {
+                    if(timeout > 0) {
+                        window.setTimeout(function() {
+                            loop(timeout-250)
+                        }, 250);
+                    } else
+                        callback(null, null);
+                }
+            });
+        }
+        loop(timeout);
+    },
+
+    /*
      *  Write content to tag.
      *
      *  'content' is a dictionary containing structures to write. Supports:
@@ -192,6 +217,35 @@ function NFC() {
         }
 
         tag.write_logic(device, logic_block, data, function(rc) {
+          callback(rc);
+        });
+      });
+    },
+
+
+    /*
+     *  Write to physical blocks.
+     *
+     *  'physical_block': the starting physical block number.
+     *  'data': Uint8Array. Can large than 16-byte.
+     */
+    "write_physical": function(device, physical_block, key, data, cb) {
+      var callback = cb;
+
+      wait_for_passive_target(device, function(rc, tag_type) {
+        var tag = TAG()[tag_type];
+        if (!tag) {
+            console.log("nfc.write_physical: unknown tag_type: " + tag_type);
+            return;
+        }
+
+        if (!tag.read_physical) {
+          console.log("nfc.read: " + tag_type +
+                      " doesn't support reading physical block");
+          return;
+        }
+
+        tag.write_physical(device, physical_block, key, data, function(rc) {
           callback(rc);
         });
       });

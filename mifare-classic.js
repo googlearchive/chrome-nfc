@@ -158,7 +158,7 @@ MifareClassic.prototype.read_physical = function(device, phy_block, cnt, cb) {
 
   function read_next(phy_block) {
     var blk_no = phy_block;
-    dev.authentication(blk_no, function(rc, data) {
+    dev.publicAuthentication(blk_no, function(rc, data) {
       if (rc) return callback(rc);
       dev.read_block(blk_no, function(rc, bn) {
         if (rc) return callback(rc);
@@ -205,47 +205,42 @@ MifareClassic.prototype.read = function(device, cb) {
       var MA = (GPB & 0x40) >> 6;   // Multiapplication card: 1 for yes.
       var ADV = (GPB & 0x03) >> 0;  // (MAD version code: 1 for v1, 2 for v2)
 
-      if (DA && ADV == 1) {
-        // TODO: check CRC in MAD.
-        var nfc_cnt;
-        for (nfc_cnt = 0;  // assume the NDEF is in the 1st sector.
-             data[0x12 + nfc_cnt * 2 + 0] == 0x03 &&
-             data[0x12 + nfc_cnt * 2 + 1] == 0xE1;
-             nfc_cnt++);
-        var tlv = new Uint8Array();
-        for(var i = 1; i <= nfc_cnt; i++) {
-          tlv = UTIL_concat(tlv, data.subarray(i * 0x40, i * 0x40 + 0x30));
-        }
+      // TODO: check CRC in MAD.
+      var nfc_cnt;
+      for (nfc_cnt = 0;  // assume the NDEF is in the 1st sector.
+           data[0x12 + nfc_cnt * 2 + 0] == 0x03 &&
+           data[0x12 + nfc_cnt * 2 + 1] == 0xE1;
+           nfc_cnt++);
+      var tlv = new Uint8Array();
+      for(var i = 1; i <= nfc_cnt; i++) {
+        tlv = UTIL_concat(tlv, data.subarray(i * 0x40, i * 0x40 + 0x30));
+      }
 
-        // TODO: move to tlv.js
-        for (var i = 0; i < tlv.length; i++) {
-          switch (tlv[i]) {
-          case 0x00:  /* NULL */
-            console.log("[DEBUG] NULL TLV.");
-            break;
-          case 0xFE:  /* Terminator */
-            console.log("[DEBUG] Terminator TLV.");
-            return;
-          case 0x03: /* NDEF */
-            var len = tlv[i + 1];
-            if ((len + 2) > tlv.length) {
-              console.log("[WARN] Vlen:" + len + " > totla len:" + tlv.length);
-            }
-            return callback(0,
-                new Uint8Array(tlv.subarray(i + 2, i + 2 + len)).buffer);
-            /* TODO: now pass NDEF only. Support non-NDEF in the future. */
-            i += len + 1;
-          default:
-            console.log("[ERROR] Unsupported TLV: " + UTIL_BytesToHex(tlv[0]));
-            return;
+      // TODO: move to tlv.js
+      for (var i = 0; i < tlv.length; i++) {
+        switch (tlv[i]) {
+        case 0x00:  /* NULL */
+          console.log("[DEBUG] NULL TLV.");
+          break;
+        case 0xFE:  /* Terminator */
+          console.log("[DEBUG] Terminator TLV.");
+          return;
+        case 0x03: /* NDEF */
+          var len = tlv[i + 1];
+          if ((len + 2) > tlv.length) {
+            console.log("[WARN] Vlen:" + len + " > totla len:" + tlv.length);
           }
+          return callback(0,
+              new Uint8Array(tlv.subarray(i + 2, i + 2 + len)).buffer);
+          /* TODO: now pass NDEF only. Support non-NDEF in the future. */
+          i += len + 1;
+        default:
+          console.log("[ERROR] Unsupported TLV: " + UTIL_BytesToHex(tlv[0]));
+          return;
         }
-      } else {
-        console.log("Unsupported GPB: " + UTIL_BytesToHex([GPB]));
       }
     }
   });
-
 }
 
 
@@ -347,7 +342,7 @@ MifareClassic.prototype.compose = function(ndef) {
 //   block_no: starting physical block number
 //   data: Uint8Array of data to write. Reminding data will be write to
 //         next block continously.
-MifareClassic.prototype.write_physical = function(device, block_no,
+MifareClassic.prototype.write_physical = function(device, block_no, key,
                                                   all_data, cb) {
   var dev = device;
   var blk_no = block_no;  // for closure
@@ -361,15 +356,19 @@ MifareClassic.prototype.write_physical = function(device, block_no,
     data = UTIL_concat(data, new Uint8Array(16 - data.length));
   }
 
-  dev.authentication(blk_no, function(rc, dummy) {
+  function authenticationCallback (rc, dummy) {
     if (rc) return callback(rc);
 
     var block_data = data.subarray(0, 16);
     dev.write_block(blk_no, block_data, function(rc) {
       if (rc) return callback(rc);
-      self.write_physical(dev, blk_no + 1, data.subarray(16), callback);
+      self.write_physical(dev, blk_no + 1, key, data.subarray(16), callback);
     }, self.WRITE_COMMAND);
-  });
+  }
+  if (key == null)
+    dev.publicAuthentication(blk_no, authenticationCallback);
+  else
+    dev.privateAuthentication(blk_no, key, authenticationCallback);
 }
 
 
@@ -391,7 +390,7 @@ MifareClassic.prototype.write = function(device, ndef, cb) {
   }
 
   /* Start from MAD */
-  self.write_physical(dev, 1, card.subarray(16), callback);
+  self.write_physical(dev, 1, null, card.subarray(16), callback);
 }
 
 
@@ -415,7 +414,7 @@ MifareClassic.prototype.write_logic = function(device, logic_block,
 
     if (data.length == 0) return callback(0);
   
-    self.write_physical(dev, self.log2phy(blk_no),
+    self.write_physical(dev, self.log2phy(blk_no), null,
                         data.subarray(0, 16),
                         function(rc) {
       if (rc) return callback(rc);
