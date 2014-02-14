@@ -14,4 +14,7 @@
  * limitations under the License.
  */
 
-'use strict';
+chrome.app.runtime.onLaunched.addListener(function() {
+  chrome.app.window.create('app.html', {
+    'bounds': { 'width': 800, 'height': 600 }});
+});

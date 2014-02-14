@@ -1,0 +1,24 @@
+{
+  "name": "NFC Sample",
+  "version": "0.1",
+
+  "description": "NFC Sample",
+  "manifest_version" : 2,
+  "minimum_chrome_version" : "26.0.1410.28",
+
+  "permissions": [
+    "usb",
+    {
+      "usbDevices": [ 
+        { "vendorId":1254, "productId":21905 },
+        { "vendorId":1839, "productId":8704 } 
+      ] 
+    }
+  ],
+
+  "app": {
+    "background": {
+      "scripts": [ "background.js" ]
+    }
+  }
+}
