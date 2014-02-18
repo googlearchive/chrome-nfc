@@ -8,7 +8,7 @@ TODO
 
 [ACR122U](http://www.acs.com.hk/en/products/3/acr122u-usb-nfc-reader) | [SCL3711](http://www.identive-group.com/products-and-solutions/identification-products/mobility-solutions/mobile-readers/scl3711-contactless-usb-smart-card-reader)
 --- | --- 
-<img height="150px" src="http://newimg.globalmarket.com/filestorage/gallery/manufacturer/84/2712084/prod/0_1374654061746.jpg"/> | <img height="150px" src="http://www.identive-group.com/images/product-images/scl3711-contactless-usb-smart-card-reader-prodpage.jpg"/> 
+<img src="//raw.github.com/GoogleChrome/chrome-nfc/sample/images/acr122u.png"/> | <img src="//raw.github.com/GoogleChrome/chrome-nfc/sample/images/scl3711.png"/>
 
 ## Run the chrome app sample
 
