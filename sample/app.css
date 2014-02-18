@@ -1,0 +1,45 @@
+html, body {
+  height: 100%;
+}
+
+body {  
+  margin: 0px 20px 0 20px;
+}
+
+.hidden {
+  display: none
+}
+
+dd {
+  margin-bottom: 10px;
+}
+
+#device-thumbnail {
+  position: fixed;
+}
+
+#device-info {
+  margin-left: 150px;
+}
+
+.tab-content {
+  margin-bottom: 10px;
+}
+
+pre {
+  -webkit-user-select: text;
+  cursor: text;
+}
+
+.log {
+  overflow-y: scroll;
+  max-height: 150px;
+  background-color: #FFF;
+}
+
+.log pre {
+  background: #FFF;
+  border: none;
+  border-bottom: 1px solid #CCC;
+  border-radius: 0px;
+}

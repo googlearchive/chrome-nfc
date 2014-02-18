@@ -1,7 +1,62 @@
 <!DOCTYPE html>
 <html>
+<head>
+  <link href="lib/bootstrap.min.css" rel="stylesheet" type="text/css" />
+  <link href="app.css" rel="stylesheet" type="text/css" />
+</head>
 <body>
-<script src="chrome-nfc.js"></script>
-<script src="app.js"></script>
+  <div class="page-header">
+    <h1>chrome.nfc API Playground</h1>
+  </div>
+   
+  <ul class="nav nav-tabs">
+    <li class="active"><a href="#home" data-toggle="tab">Device</a></li>
+    <li class="dropdown">
+      <a href="#" id="myTabDrop1" class="dropdown-toggle" data-toggle="dropdown">Read <b class="caret"></b></a>
+      <ul class="dropdown-menu" role="menu" aria-labelledby="myTabDrop1">
+        <li><a href="#read-ndef" tabindex="-1" data-toggle="tab">Read NDEF Tag</a></li>
+        <li><a href="#read-mifare" tabindex="-1" data-toggle="tab">Read Mifare Classic Tag</a></li>
+      </ul>
+    </li>
+    <li class="dropdown">
+      <a href="#" id="myTabDrop2" class="dropdown-toggle" data-toggle="dropdown">Write <b class="caret"></b></a>
+      <ul class="dropdown-menu" role="menu" aria-labelledby="myTabDrop2">
+        <li><a href="#write-ndef" tabindex="-1" data-toggle="tab">Write NDEF Tag</a></li>
+        <li><a href="#write-mifare" tabindex="-1" data-toggle="tab">Write Mifare Classic Tag</a></li>
+      </ul>
+    </li>
+    <li><a href="#emulate" data-toggle="tab">Emulate</a></li>
+  </ul>
+  <div class="tab-content">
+    <div class="tab-pane active" id="home">
+      <img id="device-thumbnail" class="hidden"/>
+      <dl id="device-info">
+        <dt>Name</dt>
+        <dd id="device-name"></dd>
+        <dt>Vendor ID</dt>
+        <dd id="device-vendor-id"></dd>
+        <dt>Product ID</dt>
+        <dd id="device-product-id"></dd>
+      </dl>
+    </div>
+    <div class="tab-pane" id="emulate">TODO</div>
+    <div class="tab-pane" id="read-ndef">
+      <pre></pre>
+      <button type="button" class="btn btn-default">Run</button>      
+    </div>
+    <div class="tab-pane" id="read-mifare">
+      <pre></pre>
+      <button type="button" class="btn btn-default">Run</button>      
+    </div>
+    <div class="tab-pane" id="write-ndef">TODO</div>
+    <div class="tab-pane" id="write-mifare">TODO</div>
+  </div>  
+  <div class="log">
+  </div>
+  
+  <script src="chrome-nfc.js"></script>
+  <script src="app.js"></script>
+  <script src="lib/jquery-2.1.0.min.js"></script>
+  <script src="lib/bootstrap.min.js"></script>
 </body>
 </html>
