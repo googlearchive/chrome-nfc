@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*
+/**
  * @fileoverview Mifare Classic driver
  */
 
@@ -145,7 +145,7 @@ MifareClassic.prototype.read_physical = function(device, phy_block, cnt, cb) {
       for (nfc_cnt = 0;  // assume the NDEF is in the 1st sector.
            data[0x12 + nfc_cnt * 2 + 0] == 0x03 &&
            data[0x12 + nfc_cnt * 2 + 1] == 0xE1;
-           nfc_cnt++);
+           nfc_cnt++) {};
       var new_num = (nfc_cnt + 1) * 4;
       if (new_num < max_block)
         return new_num;
@@ -210,7 +210,7 @@ MifareClassic.prototype.read = function(device, cb) {
       for (nfc_cnt = 0;  // assume the NDEF is in the 1st sector.
            data[0x12 + nfc_cnt * 2 + 0] == 0x03 &&
            data[0x12 + nfc_cnt * 2 + 1] == 0xE1;
-           nfc_cnt++);
+           nfc_cnt++) {};
       var tlv = new Uint8Array();
       for(var i = 1; i <= nfc_cnt; i++) {
         tlv = UTIL_concat(tlv, data.subarray(i * 0x40, i * 0x40 + 0x30));
@@ -233,7 +233,7 @@ MifareClassic.prototype.read = function(device, cb) {
           return callback(0,
               new Uint8Array(tlv.subarray(i + 2, i + 2 + len)).buffer);
           /* TODO: now pass NDEF only. Support non-NDEF in the future. */
-          i += len + 1;
+          // i += len + 1;
         default:
           console.log("[ERROR] Unsupported TLV: " + UTIL_BytesToHex(tlv[0]));
           return;

@@ -188,14 +188,15 @@ devManager.prototype.close = function(singledev, who) {
   for (var i = 0; i < alldevs.length; ++i) {
     var dev = alldevs[i];
     var nremaining = dev.deregisterClient(who);
+    // TODO: uncomment when Chrome stabilizes.
+    /*
     if (nremaining == 0) {
       // This device has no active clients remaining.
       // Close it so libusb releases its claim and other processes
       // can try attach to the device.
-      //
-      // TODO: uncomment when Chrome stabilizes.
-      // this.dropDevice(dev);
+      this.dropDevice(dev);
     }
+    */
   }
 };
 
