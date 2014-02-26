@@ -22,7 +22,7 @@ TODO
 
 ### Add permissions to your manifest.json file
 
-```json
+```javascript
 "permissions": [
   "usb",
   {
