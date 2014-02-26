@@ -10,7 +10,7 @@ TODO
 --- | --- 
 <img src="//raw.github.com/GoogleChrome/chrome-nfc/sample/images/acr122u.png"/> | <img src="//raw.github.com/GoogleChrome/chrome-nfc/sample/images/scl3711.png"/>
 
-## Run the chrome app sample
+## Play with the Chrome App sample
 
 * Open `chrome://extensions` page
 * Make sure the "Developer mode" is checked
@@ -20,7 +20,7 @@ TODO
 
 ## Usage
 
-### Add permissions to your manifest.json file
+Once you've imported the [chrome-nfc.js](//raw.github.com/GoogleChrome/chrome-nfc/master/sample/chrome-nfc.js) javascript library into your Chrome App, you need to add the permissions below to your manifest file:
 
 ```javascript
 "permissions": [
