@@ -1,9 +1,5 @@
 # Chrome App NFC Library
 
-## Status
-
-TODO
-
 ## Compatible NFC Readers
 
 [ACR122U](http://www.acs.com.hk/en/products/3/acr122u-usb-nfc-reader) | [SCL3711](http://www.identive-group.com/products-and-solutions/identification-products/mobility-solutions/mobile-readers/scl3711-contactless-usb-smart-card-reader)
@@ -12,11 +8,11 @@ TODO
 
 ## Play with the Chrome App sample
 
-* Open `chrome://extensions` page
-* Make sure the "Developer mode" is checked
-* Click on the "Load unpacked extension" button
-* Select the [sample](/sample) folder
+* Check `Developer Mode` in `chrome://extensions`
+* Click "Load unpacked extension..." in `chrome://extensions` and select the [sample](/sample) folder.
 * Launch it.
+
+<img src="//raw.github.com/GoogleChrome/chrome-nfc/sample/screenshots/1280x720.png"/>
 
 ## Usage
 
@@ -95,7 +91,6 @@ chrome.nfc.findDevices(function(devices) {
 });
 ```
 
-
 ### Read Mifare Classic tag (Logic Mode)
 
 ``` javascript
@@ -106,7 +101,6 @@ chrome.nfc.findDevices(function(devices) {
   });
 });
 ```
-
 
 ### Write Mifare Classic tag (Logic Mode)
 
@@ -128,3 +122,11 @@ chrome.nfc.findDevices(function(devices) {
   });
 });
 ```
+
+## Compiling the library
+
+Compiling script requires [Python 3.0](http://www.python.org/download/releases/3.0/) and will use online [Closure Compiler](https://developers.google.com/closure/). Just run
+
+    python3 compile.py
+
+and the library will be written to `chrome-nfc.js`.
