@@ -2,8 +2,15 @@ html, body {
   height: 100%;
 }
 
-body {  
+.wrapper {
   margin: 0px 20px 0 20px;
+}
+
+textarea {
+  display: block;
+  width: 660px;
+  height: 220px;
+  font-family: "Courier New", monospace;
 }
 
 .hidden {
@@ -31,15 +38,38 @@ pre {
   cursor: text;
 }
 
-.log {
-  overflow-y: scroll;
-  max-height: 150px;
-  background-color: #FFF;
+.tab-content {
+  overflow: initial;
 }
 
-.log pre {
-  background: #FFF;
+#logContainer {
+  height: 200px;
+  width: 100%;
+  position: fixed;
+  bottom: 0;
+  background: #F5F5F5;
+  transition: height .2s ease-in-out;
+}
+
+.logs {
+  overflow-y: auto;
+  height: 190px;
+}
+
+.logs pre {
+  margin: 0 0 1px;
   border: none;
-  border-bottom: 1px solid #CCC;
+  border-bottom: 1px dotted #DDD;
   border-radius: 0px;
+  padding: 5px;
+}
+
+.drawer {
+  height: 10px;
+  background: #DDD;
+  cursor: pointer;
+}
+
+.small {
+  height: 10px !important;
 }
