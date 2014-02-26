@@ -12,7 +12,7 @@
 * Click "Load unpacked extension..." in `chrome://extensions` and select the [sample](/sample) folder.
 * Launch it.
 
-<img src="//raw.github.com/GoogleChrome/chrome-nfc/sample/screenshots/1280x720.png"/>
+<img src="//raw.github.com/GoogleChrome/chrome-nfc/sample/screenshots/1040x811.png"/>
 
 ## Usage
 

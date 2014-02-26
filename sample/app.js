@@ -1,4 +1,4 @@
-var iompatibleDevices = [
+var compatibleDevices = [
   {
     deviceName: 'ACR122U USB NFC Reader',
     productId: 0x2200,
