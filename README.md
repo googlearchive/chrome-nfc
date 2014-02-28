@@ -4,7 +4,7 @@
 
 [ACR122U](http://www.acs.com.hk/en/products/3/acr122u-usb-nfc-reader) | [SCL3711](http://www.identive-group.com/products-and-solutions/identification-products/mobility-solutions/mobile-readers/scl3711-contactless-usb-smart-card-reader)
 --- | --- 
-<img src="//raw.github.com/GoogleChrome/chrome-nfc/sample/images/acr122u.png"/> | <img src="//raw.github.com/GoogleChrome/chrome-nfc/sample/images/scl3711.png"/>
+<img src="//raw.github.com/GoogleChrome/chrome-nfc/master/sample/images/acr122u.png"/> | <img src="//raw.github.com/GoogleChrome/chrome-nfc/master/sample/images/scl3711.png"/>
 
 ## Play with the Chrome App sample
 
@@ -12,7 +12,7 @@
 * Click "Load unpacked extension..." in `chrome://extensions` and select the [sample](/sample) folder.
 * Launch it.
 
-<img src="//raw.github.com/GoogleChrome/chrome-nfc/sample/screenshots/1040x811.png"/>
+<img src="//raw.github.com/GoogleChrome/chrome-nfc/master/sample/screenshots/1040x811.png"/>
 
 ## Usage
 
