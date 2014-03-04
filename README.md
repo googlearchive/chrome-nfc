@@ -1,10 +1,12 @@
 # Chrome App NFC Library
 
-## Compatible NFC Readers
+With this simple library, you can build a [Chrome App](https://developer.chrome.com/apps) that communicates over USB with NFC Readers.
+
+## Supported NFC Readers
 
 [ACR122U](http://www.acs.com.hk/en/products/3/acr122u-usb-nfc-reader) | [SCL3711](http://www.identive-group.com/products-and-solutions/identification-products/mobility-solutions/mobile-readers/scl3711-contactless-usb-smart-card-reader)
 --- | --- 
-<img src="//raw.github.com/GoogleChrome/chrome-nfc/sample/images/acr122u.png"/> | <img src="//raw.github.com/GoogleChrome/chrome-nfc/sample/images/scl3711.png"/>
+<img src="https://raw.github.com/GoogleChrome/chrome-nfc/master/sample/images/acr122u.png"/> | <img src="https://raw.github.com/GoogleChrome/chrome-nfc/master/sample/images/scl3711.png"/>
 
 ## Play with the Chrome App sample
 
@@ -12,11 +14,15 @@
 * Click "Load unpacked extension..." in `chrome://extensions` and select the [sample](/sample) folder.
 * Launch it.
 
-<img src="//raw.github.com/GoogleChrome/chrome-nfc/sample/screenshots/1040x811.png"/>
+<img src="https://raw.github.com/GoogleChrome/chrome-nfc/master/sample/screenshots/1040x811.png"/>
+
+## Caveats
+
+Learn more about USB Devices Caveats at https://developer.chrome.com/apps/app_usb#caveats
 
 ## Usage
 
-Once you've imported the [chrome-nfc.js](//raw.github.com/GoogleChrome/chrome-nfc/master/sample/chrome-nfc.js) javascript library into your Chrome App, you need to add the permissions below to your manifest file:
+Once you've imported the [chrome-nfc.js](https:///raw.github.com/GoogleChrome/chrome-nfc/master/sample/chrome-nfc.js) javascript library into your Chrome App, you need to add the permissions below to your manifest file:
 
 ```javascript
 "permissions": [
