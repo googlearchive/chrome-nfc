@@ -23,8 +23,8 @@ Once you've imported the [chrome-nfc.js](//raw.github.com/GoogleChrome/chrome-nf
   "usb",
   {
     "usbDevices": [
-      { "vendorId": 1254, "productId": 21905 }, // ACR122U
-      { "vendorId": 1839, "productId": 8704 }   // SCL3711
+      { "vendorId": 1254, "productId": 21905 }, // SCL3711
+      { "vendorId": 1839, "productId": 8704 }   // ACR122U
     ]
   }
 ]
