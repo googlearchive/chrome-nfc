@@ -153,7 +153,7 @@ function showDeviceInfo() {
 }
 
 function enumerateDevices() {
-  chrome.nfc.findDevices(function(devices) {
+  chrome.nfc.getDevices(function(devices) {
     device = devices[0];
     showDeviceInfo(); 
   });
