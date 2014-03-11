@@ -64,7 +64,7 @@ function NFC() {
      *  cb(devices) is called after enumeration. 'devices' is an array of all
      *  found devices. It is an empty array if no NFC device is found.
      */
-    "findDevices": function(cb) {
+    "getDevices": function(cb) {
       var device = new usbSCL3711();
       window.setTimeout(function() {
         device.open(0, function(rc) {
