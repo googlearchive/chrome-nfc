@@ -70,7 +70,7 @@ function NFC() {
         device.open(0, function(rc) {
           if (rc) {
             console.log("NFC.device.open() = " + rc);
-            cb(null);
+            cb([]);
             return rc;
           }
           // cache device info
