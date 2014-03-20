@@ -39,7 +39,7 @@ Once you've imported the [chrome-nfc.js](https:///raw.github.com/GoogleChrome/ch
 ### Enumerate NFC readers
 
 ``` javascript
-chrome.nfc.getDevices(function(devices) {
+chrome.nfc.findDevices(function(devices) {
   console.log("Found " + devices.length + " NFC device(s)");
   for (var i = 0; i < devices.length; i++) {
     var device = devices[i];
@@ -51,7 +51,7 @@ chrome.nfc.getDevices(function(devices) {
 ### Read NFC tag
 
 ``` javascript
-chrome.nfc.getDevices(function(devices) {
+chrome.nfc.findDevices(function(devices) {
   var device = devices[0];
   chrome.nfc.read(device, {}, function(type, ndef) {
     var text = ndef.ndef[0]["text"];
@@ -63,7 +63,7 @@ chrome.nfc.getDevices(function(devices) {
 ### Write NFC tag
 
 ``` javascript
-chrome.nfc.getDevices(function(devices) {
+chrome.nfc.findDevices(function(devices) {
   var device = devices[0];
   var ndef = [
     {"text": "Chromium.org website" },
@@ -82,7 +82,7 @@ chrome.nfc.getDevices(function(devices) {
 ### Emulate NFC tag
 
 ``` javascript
-chrome.nfc.getDevices(function(devices) {
+chrome.nfc.findDevices(function(devices) {
   var device = devices[0];
   var ndef = [
     {"type": "URI", "uri": "http://chromium.org"}
@@ -100,7 +100,7 @@ chrome.nfc.getDevices(function(devices) {
 ### Read Mifare Classic tag (Logic Mode)
 
 ``` javascript
-chrome.nfc.getDevices(function(devices) {
+chrome.nfc.findDevices(function(devices) {
   var device = devices[0];
   chrome.nfc.read_logic(device, 0, 2, function(rc, data) {
     console.log(UTIL_BytesToHex(data));
@@ -111,7 +111,7 @@ chrome.nfc.getDevices(function(devices) {
 ### Write Mifare Classic tag (Logic Mode)
 
 ``` javascript
-chrome.nfc.getDevices(function(devices) {
+chrome.nfc.findDevices(function(devices) {
   var device = devices[0];
   var data = new Uint8Array([ // NDEF(http://google.com)
     0xdb, 0x00, 0x03, 0xe1, 0x00, 0x00, 0x00, 0x00, // block 0 (MAD1)
