@@ -62,14 +62,14 @@ devManager.prototype.closeAll = function() {
   }
 
   // Next, find current devices and explictly close them.
-  chrome.usb.getDevices({'vendorId': 0x04e6, 'productId': 0x5591},
+  chrome.usb.findDevices({'vendorId': 0x04e6, 'productId': 0x5591},
       function(d) {
         if (!d) return;
           for(var i = 0; i < d.length; ++i) {
             chrome.usb.closeDevice(d[i]);
         }
     });
-  chrome.usb.getDevices({'vendorId': 0x072f, 'productId': 0x2200},
+  chrome.usb.findDevices({'vendorId': 0x072f, 'productId': 0x2200},
       function (d) {
         if (!d) return;
           for(var i = 0; i < d.length; ++i) {
@@ -151,12 +151,12 @@ devManager.prototype.enumerate = function(cb) {
     if (first) {
       // Only first requester calls actual low level.
       window.setTimeout(function() {
-          chrome.usb.getDevices({'vendorId': 0x04e6, 'productId': 0x5591},
+          chrome.usb.findDevices({'vendorId': 0x04e6, 'productId': 0x5591},
             function (d) {
               if (d && d.length != 0) {
                 enumerated(d, false);
               } else {
-                chrome.usb.getDevices(
+                chrome.usb.findDevices(
                     {'vendorId': 0x072f, 'productId': 0x2200},
                     function (d) {
                       if (d && d.length != 0) {
