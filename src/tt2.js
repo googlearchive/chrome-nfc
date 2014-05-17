@@ -20,7 +20,35 @@
 'use strict';
 
 
-function TT2() {
+function TT2(tag_id) {
+  this.tag_id = new Uint8Array(tag_id);
+  this.type_name = null;  // vendor and its card name
+
+  /*
+   * TODO: detect at beginning -- if we have a reliable way to detect.
+   *   this.detect_type_name(cb);
+  */
+
+  this.lock_contorl = [];
+}
+
+TT2.prototype.detect_type_name = function(cb) {
+  var self = this;
+  var callback = cb;
+
+  if (this.tag_id[0] == 0x04) {
+    // NxP, Try to read page 0x10. If success, it is Ultralight C.
+    this.device.read_block(0x10, function(rc, bn) {
+      if (rc) {
+        self.type_name = "Mifare Ultralight";
+      } else {
+        self.type_name = "Mifare Ultralight C";
+      }
+
+      console.log("[DEBUG] TT2.type_name = " + self.type_name);
+      if (callback) callback();
+    });
+  }
 }
 
 
@@ -70,25 +98,75 @@ TT2.prototype.read = function(device, cb) {
 
         /* TODO: call tlv.js instead */
         /* TODO: now pass NDEF only. Support non-NDEF in the future. */
-        /* TODO: assume the first TLV is NDEF and only one TLV existed. */
-        switch (card[0x10]) {
-        case 0x00:  /* NULL */
-          console.log("[ERROR] NULL TLV.");
-          return;
-        case 0xFE:  /* Terminator */
-          console.log("[ERROR] Terminator TLV.");
-          return;
-        case 0x03: /* NDEF */
-          var len = card[0x11];
-          if ((len + 0x12) > card.length) {
-            console.log("[WARN] TLV len " + len + " > card len " + card.length);
+        for (var i = 0x10; i < card.length;) {
+          switch (card[i]) {
+          case 0x00:  /* NULL */
+            console.debug("NULL TLV");
+            i++;
+            break;
+
+          case 0x01:  /* Lock Control TLV */
+            console.debug("Lock Control TLV");
+
+            var PageAddr = card[i + 2] >> 4;
+            var ByteOffset = card[i + 2] & 0xf;
+            var Size = card[i + 3];
+            if (Size == 0) Size = 256;  /* 256 bits */
+            var BytesPerPage = Math.pow(2, card[i + 4] & 0xf);
+            var BytesLockedPerLockBit = card[i + 4] >> 4;
+
+            console.debug("Lock control: " +
+                " BytesLockedPerLockBit=" + BytesLockedPerLockBit +
+                ", Size=" + Size);
+
+            var ByteAddr = PageAddr * BytesPerPage + ByteOffset;
+
+            console.info("Lock control: ByteAddr=" + ByteAddr);
+            console.info("  Locked bytes:");
+            var lock_offset = 64;
+            for (var j = 0; j < (Size + 7) / 8; j++) {
+              var k = ByteAddr + j;
+
+              if (k >= card.length) {
+                console.warn("  card[" + k + "] haven't read out yet.");
+                break;
+              }
+
+              var mask = card[k];
+              console.debug("  [" + k + "]: " + mask.toString(16));
+
+              if (mask & 1) console.debug("* block-locking");
+              for (var l = 1; l < 8; l++) {
+                if (j * 8 + l >= Size) continue;
+
+                for (var s = "", m = 0;
+                     m < BytesLockedPerLockBit;
+                     lock_offset++) {
+                  s += "0x" + lock_offset.toString(16) + ", ";
+                }
+                if (mask & (1 << l)) console.info("    " + s);
+              }
+            }
+
+            i += (1/*T*/ + 1/*L*/ + card[i + 1]/*len: 3*/);
+            break;
+
+          case 0xFE:  /* Terminator */
+            console.debug("Terminator TLV.");
+            return;
+
+          case 0x03: /* NDEF */
+            var len = card[i + 1];
+            if ((i + 2 + len) > card.length) {
+              console.warn("TLV len " + len + " > card len " + card.length);
+            }
+            return callback(0,
+                new Uint8Array(card.subarray(i + 2, i + 2 + len)).buffer);
+          default:
+            console.error("Unknown Type [" + card[i] + "]");
+            return;
           }
-          return callback(0, new Uint8Array(card.subarray(0x12, 0x12 + len)).buffer);
-        default:
-          console.log("[ERROR] bad ... I assume the first TLV is NDEF, but " +
-                      card[0x10]);
-          return;
-        }
+        }  /* end of for */
       }
 
       device.read_block(block, function(rc, bn) {

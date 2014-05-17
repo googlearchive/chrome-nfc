@@ -33,25 +33,17 @@ function NFC() {
     return ndef_obj;
   }
 
-  // TODO: move tag.js
-  function TAG() {
-    return {
-      "tt2": new TT2(),
-      "mifare_classic": new MifareClassic()
-    };
-  }
-
   function wait_for_passive_target(device, cb, timeout) {
     if (timeout == undefined) timeout = 9999999999;
 
-    device.wait_for_passive_target(timeout, function(rc, tag_type, tagId) {
+    device.wait_for_passive_target(timeout, function(rc, tag_type, tag_id) {
       if (rc) {
         console.log("NFC.wait_for_passive_target() = " + rc);
         cb(rc);
         return rc;
       }
-      console.log("[DEBUG] nfc.wait_for_passive_target: " + tag_type + " with ID: " +tagId);
-      cb(rc, tag_type, tagId);
+      console.log("[DEBUG] nfc.wait_for_passive_target: " + tag_type + " with ID: " + UTIL_BytesToHex(new Uint8Array(tag_id)));
+      cb(rc, tag_type, tag_id);
     });
   }
 
@@ -101,8 +93,8 @@ function NFC() {
       var timeout = options["timeout"];
       var callback = cb;
 
-      wait_for_passive_target(device, function(rc, tag_type) {
-        var tag = TAG()[tag_type];
+      wait_for_passive_target(device, function(rc, tag_type, tag_id) {
+        var tag = new Tag(tag_type, tag_id);
         if (!tag) {
             console.log("nfc.read: unknown tag_type: " + tag_type);
             return;
@@ -126,8 +118,8 @@ function NFC() {
     "read_logic": function(device, logic_block, cnt, cb) {
       var callback = cb;
 
-      wait_for_passive_target(device, function(rc, tag_type) {
-        var tag = TAG()[tag_type];
+      wait_for_passive_target(device, function(rc, tag_type, tag_id) {
+        var tag = new Tag(tag_type, tag_id);
         if (!tag) {
           console.log("nfc.read_logic: unknown tag_type: " + tag_type);
           return;
@@ -145,16 +137,16 @@ function NFC() {
     },
 
     /*
-     * Return tagId as soon as a Tag is detected.
+     * Return tag_id as soon as a tag is detected.
      */
     "wait_for_tag": function(device, timeout, cb) {
         var callback = cb;
 
         var loop = function(timeout) {
 
-            wait_for_passive_target(device, function(rc, tag_type, id) {
+            wait_for_passive_target(device, function(rc, tag_type, tag_id) {
                 if(rc >= 0) {
-                    callback(tag_type, id);
+                    callback(tag_type, tag_id);
                 }
                 else {
                     if(timeout > 0) {
@@ -180,8 +172,8 @@ function NFC() {
      *  timeout is optional.
      */
     "write": function(device, content, cb, timeout) {
-      wait_for_passive_target(device, function(rc, tag_type) {
-        var tag = TAG()[tag_type];
+      wait_for_passive_target(device, function(rc, tag_type, tag_id) {
+        var tag = new Tag(tag_type, tag_id);
         if (!tag) {
             console.log("nfc.write: unknown tag_type: " + tag_type);
             return;
@@ -203,14 +195,14 @@ function NFC() {
     "write_logic": function(device, logic_block, data, cb) {
       var callback = cb;
 
-      wait_for_passive_target(device, function(rc, tag_type) {
-        var tag = TAG()[tag_type];
+      wait_for_passive_target(device, function(rc, tag_type, tag_id) {
+        var tag = new Tag(tag_type, tag_id);
         if (!tag) {
             console.log("nfc.write_logic: unknown tag_type: " + tag_type);
             return;
         }
 
-        if (!tag.read_logic) {
+        if (!tag.write_logic) {
           console.log("nfc.read: " + tag_type +
                       " doesn't support reading logic block");
           return;
@@ -232,14 +224,14 @@ function NFC() {
     "write_physical": function(device, physical_block, key, data, cb) {
       var callback = cb;
 
-      wait_for_passive_target(device, function(rc, tag_type) {
-        var tag = TAG()[tag_type];
+      wait_for_passive_target(device, function(rc, tag_type, tag_id) {
+        var tag = new Tag(tag_type, tag_id);
         if (!tag) {
             console.log("nfc.write_physical: unknown tag_type: " + tag_type);
             return;
         }
 
-        if (!tag.read_physical) {
+        if (!tag.write_physical) {
           console.log("nfc.read: " + tag_type +
                       " doesn't support reading physical block");
           return;
@@ -263,7 +255,7 @@ function NFC() {
      */
     "emulate_tag": function(device, content, cb, timeout) {
       if (timeout == undefined) timeout = 9999999999;
-      wait_for_passive_target(device, function(rc, tag_type) {
+      wait_for_passive_target(device, function(rc, tag_type, tag_id) {
         var tt2 = new TT2();
         var ndef_obj = construct_ndef_obj(content["ndef"]);
         tt2.emulate(device, ndef_obj, timeout, function(rc) {

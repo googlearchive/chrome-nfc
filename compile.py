@@ -34,6 +34,7 @@ JS_FILES = [
   'src/devmanager.js',
   'src/scl3711.js',
   'src/sha256.js',
+  'src/tag.js',
   'src/tt2.js',
   'src/usb.js',
   'src/util.js'

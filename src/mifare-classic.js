@@ -57,7 +57,10 @@
  *
  */
 
-function MifareClassic() {
+function MifareClassic(tag_id) {
+  this.tag_id = new Uint8Array(tag_id);
+  this.type_name = "MIFARE Classic 1K";
+
   this.WRITE_COMMAND = 0xA0;  // differ to type 2's 0xA2.
 }
 

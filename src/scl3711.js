@@ -126,16 +126,16 @@ usbSCL3711.prototype.read = function(timeout, cb) {
   var self = this;
 
   // Schedule call to cb if not called yet.
-  function schedule_cb(a, b) {
+  function schedule_cb(a, b, c) {
     if (tid) {
       // Cancel timeout timer.
       window.clearTimeout(tid);
       tid = null;
     }
-    var c = callback;
-    if (c) {
+    var C = callback;
+    if (C) {
       callback = null;
-      window.setTimeout(function() { c(a, b); }, 0);
+      window.setTimeout(function() { C(a, b, c); }, 0);
     }
   };
 
@@ -244,23 +244,35 @@ usbSCL3711.prototype.read = function(timeout, cb) {
                  f[6] == 0x4b /* InListPassiveTarget reply */) {
         if (f[7] == 0x01 /* tag number */ &&
             f[8] == 0x01 /* Tg */) {
-          console.log("DEBUG: InListPassiveTarget SENS_REQ=0x" +
+
+          /* TODO:
+           * Take [SENS_REQ(ATQA), SEL_RES(SAK), tag_id] to ask database.
+           * The database would return the corresponding TAG object.
+           */
+
+          console.log("DEBUG: InListPassiveTarget SENS_REQ(ATQA)=0x" +
                       (f[9] * 256 + f[10]).toString(16) +
-                      ", SEL_RES=0x" + f[11].toString(16));
+                      ", SEL_RES(SAK)=0x" + f[11].toString(16));
+          var NFCIDLength = f[12];
+          var tag_id = new Uint8Array(f.subarray(13, 13 + NFCIDLength)).buffer;
+          console.log("DEBUG: tag_id: " +
+              UTIL_BytesToHex(new Uint8Array(tag_id)));
+
           if (f[9] == 0x00 && f[10] == 0x44 /* SENS_RES */) {
+            /* FIXME: not actually Ultralight. Only when tag_id[0]==0x04 */
             console.log("DEBUG: found Mifare Ultralight (106k type A)");
             self.detected_tag = "Mifare Ultralight";
             self.authed_sector = null;
             self.auth_key = null;
-            schedule_cb(0, "tt2" /* new Uint8Array(f.subarray(11, f.length)).buffer */);
+            schedule_cb(0, "tt2", tag_id);
             return;
           } else if (f[9] == 0x00 && f[10] == 0x04 /* SENS_RES */) {
+            /* FIXME: not actually Classic. Only when tag_id[0]==0x04 */
             console.log("DEBUG: found Mifare Classic 1K (106k type A)");
             self.detected_tag = "Mifare Classic 1K";
             self.authed_sector = null;
             self.auth_key = null;
-            schedule_cb(0, "mifare_classic" /* new Uint8Array(f.subarray(11, f.length)).buffer */);
-            //schedule_cb(0, new Uint8Array(f.subarray(18, f.length - 2)).buffer);
+            schedule_cb(0, "mifare_classic", tag_id);
             return;
           }
         } else {
