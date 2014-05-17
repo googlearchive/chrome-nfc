@@ -108,6 +108,7 @@ TT2.prototype.read = function(device, cb) {
           case 0x01:  /* Lock Control TLV */
             console.debug("Lock Control TLV");
 
+            /* TODO: refactor and share code with Memory Control TLV */
             var PageAddr = card[i + 2] >> 4;
             var ByteOffset = card[i + 2] & 0xf;
             var Size = card[i + 3];
@@ -129,6 +130,7 @@ TT2.prototype.read = function(device, cb) {
 
               if (k >= card.length) {
                 console.warn("  card[" + k + "] haven't read out yet.");
+                /* TODO: read out and continue the following parse */
                 break;
               }
 
@@ -150,6 +152,8 @@ TT2.prototype.read = function(device, cb) {
 
             i += (1/*T*/ + 1/*L*/ + card[i + 1]/*len: 3*/);
             break;
+
+          /* TODO: 0x02 -- Memory Control TLV */
 
           case 0xFE:  /* Terminator */
             console.debug("Terminator TLV.");
