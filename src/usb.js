@@ -91,9 +91,10 @@ llSCL3711.prototype.readLoop = function() {
           // Read more.
           window.setTimeout(function() { self.readLoop(); } , 0);
         } else {
-          console.log(UTIL_fmt('tiny reply!'));
-          console.log(x);
-          window.setTimeout(function() { self.close(); }, 0);
+          console.error(UTIL_fmt('tiny reply!'));
+          console.error(x);
+          // TODO(yjlou): I don't think a tiny reply requires close.
+          // window.setTimeout(function() { self.close(); }, 0);
         }
 
       } else {
