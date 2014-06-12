@@ -44,7 +44,8 @@ def main():
   print('Compiling JavaScript code.')
 
   params = [
-      ('compilation_level', 'SIMPLE_OPTIMIZATIONS'),
+      ('compilation_level', 'WHITESPACE_ONLY'),
+      ('formatting', 'pretty_print'),
       ('language', 'ECMASCRIPT5'),
       ('output_format', 'json'),
       ('output_info', 'statistics'),
