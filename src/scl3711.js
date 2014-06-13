@@ -147,7 +147,14 @@ usbSCL3711.prototype.read = function(timeout, cb) {
 
     tid = null;
 
-    schedule_cb(-5 /* ERR_MSG_TIMEOUT */);
+    /* TODO(yjlou): Remove the closeAll() hack below.
+     *              For some reason I don't know, the reader would not reply
+     *              packet. Thus, use the closeAll() to force the dev_manager
+     *              to re-open the USB device again.
+     */
+    dev_manager.closeAll(function() {
+      schedule_cb(-5 /* ERR_MSG_TIMEOUT */);
+    });
   };
 
   function read_frame() {

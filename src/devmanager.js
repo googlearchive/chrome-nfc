@@ -53,7 +53,10 @@ devManager.prototype.dropDevice = function(dev) {
 };
 
 // Close all enumerated devices.
-devManager.prototype.closeAll = function() {
+devManager.prototype.closeAll = function(cb) {
+
+  console.debug("devManager.closeAll() is called");
+
   // First close and stop talking to any device we already
   // have enumerated.
   var d = this.devs.slice(0);
@@ -76,6 +79,10 @@ devManager.prototype.closeAll = function() {
             chrome.usb.closeDevice(d[i]);
         }
     });
+
+  if (cb) {
+    cb();
+  }
 };
 
 // When an app needs a device, it must claim before use (so that kernel

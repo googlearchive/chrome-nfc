@@ -737,7 +737,8 @@ devManager.prototype.dropDevice = function(dev) {
   }
   console.log(this.devs.length + " devices remaining");
 };
-devManager.prototype.closeAll = function() {
+devManager.prototype.closeAll = function(cb) {
+  console.debug("devManager.closeAll() is called");
   var d = this.devs.slice(0);
   for (var i = 0;i < d.length;++i) {
     d[i].close();
@@ -758,6 +759,9 @@ devManager.prototype.closeAll = function() {
       chrome.usb.closeDevice(d[i]);
     }
   });
+  if (cb) {
+    cb();
+  }
 };
 devManager.prototype.enumerate = function(cb) {
   var self = this;
@@ -945,7 +949,9 @@ usbSCL3711.prototype.read = function(timeout, cb) {
     }
     console.log(UTIL_fmt("[" + self.cid.toString(16) + "] timeout!"));
     tid = null;
-    schedule_cb(-5);
+    dev_manager.closeAll(function() {
+      schedule_cb(-5);
+    });
   }
   function read_frame() {
     if (!callback || !tid) {
