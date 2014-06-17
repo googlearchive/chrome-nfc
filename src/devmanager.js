@@ -15,6 +15,28 @@
  */
 /**
  * @fileoverview USB device manager.
+ *
+ * +-----------------+
+ * | Reader-specific |
+ * |   driver, like  |  The "who" in the open() function.
+ * |    scl3711.js   |
+ * +-----------------+  For low level driver, this is "client".
+ *         |
+ *         v
+ * +-----------------+
+ * |  dev_manager:   |
+ * | open and enum   |
+ * | low level devs  |
+ * +-----------------+
+ *     |         |
+ *     v         v
+ * +-------+ +-------+  The "which" in the open() function.
+ * |llSCL37| |llSCL37|
+ * |       | |       |  Low level USB driver.
+ * |       | |       |  each maps to a physical device instance.
+ * |       | |       |  handling Tx/Rx queues.
+ * +-------+ +-------+
+ *
  */
 
 'use strict';
@@ -22,11 +44,11 @@
 
 // List of enumerated usb devices.
 function devManager() {
-  this.devs = [];
-  this.enumerators = [];
+  this.devs = [];         // array storing the low level device.
+  this.enumerators = [];  // array storing the pending callers of enumerate().
 }
 
-// Remove device from list.
+// Remove a device from devs[] list.
 devManager.prototype.dropDevice = function(dev) {
   var tmp = this.devs;
   this.devs = [];
@@ -83,6 +105,11 @@ devManager.prototype.closeAll = function(cb) {
   if (cb) {
     cb();
   }
+
+  /* TODO(yjlou): Devices should be gracefully removed one by one in
+   *              the close() function, instead of rudely removed here.
+   */
+  self.devs = [];
 };
 
 // When an app needs a device, it must claim before use (so that kernel
@@ -101,6 +128,9 @@ devManager.prototype.enumerate = function(cb) {
       if (d) {
         console.log('No devices found');
       } else {
+        /* TODO(yjlou): Review this case later (d==undefined).
+         *              Is this real lacking permission.
+         */
         console.log('Lacking permission?');
         do {
           (function(cb) {
@@ -111,38 +141,44 @@ devManager.prototype.enumerate = function(cb) {
       }
     }
 
+    // Found multiple devices. Create a low level SCL3711 per device.
     for (var i = 0; i < nDevice; ++i) {
-      // Create a low level SCL3711 per device.
-      (function(dev) {
+      (function(dev, i) {
         window.setTimeout(function() {
             chrome.usb.claimInterface(dev, 0, function(result) {
               console.log(UTIL_fmt('claimed'));
               console.log(dev);
+
+              // Push the new low level device to the devs[].
               self.devs.push(new llSCL3711(dev, acr122));
+
+              // Only callback after the last device is claimed.
+              if (i == (nDevice - 1)) {
+                var u8 = new Uint8Array(4);
+                u8[0] = nDevice >> 24;
+                u8[1] = nDevice >> 16;
+                u8[2] = nDevice >> 8;
+                u8[3] = nDevice;
+
+                // Notify all enumerators.
+                while (self.enumerators.length) {
+                  (function(cb) {
+                    window.setTimeout(function() { if (cb) cb(0, u8); }, 20);
+                  })(self.enumerators.shift());
+                }
+              }
             });
           }, 0);
-      })(d[i]);
-    }
-
-    var u8 = new Uint8Array(4);
-    u8[0] = nDevice >> 24;
-    u8[1] = nDevice >> 16;
-    u8[2] = nDevice >> 8;
-    u8[3] = nDevice;
-
-    // If no device, throttle the polling a bit by replying slower.
-    var delay = (nDevice > 0) ? 20 : 200;
-
-    // Notify all enumerators.
-    while (self.enumerators.length) {
-      (function(cb) {
-        window.setTimeout(function() { if (cb) cb(0, u8); }, delay);
-      })(self.enumerators.shift());
+      })(d[i], i);
     }
   };
+  /* end of enumerated() */
+
 
   if (this.devs.length != 0) {
     // Already have devices. Report number right away.
+    // TODO(yjlou): The new plugged-in NFC reader may not be detected after
+    //              the first time enumerate() is called.
     var u8 = new Uint8Array(4);
     u8[0] = this.devs.length >> 24;
     u8[1] = this.devs.length >> 16;

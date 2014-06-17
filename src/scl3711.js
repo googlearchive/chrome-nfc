@@ -310,6 +310,7 @@ usbSCL3711.prototype.exchange = function(data, timeout, cb) {
   this.read(timeout, cb);
 };
 
+
 // TODO: move to ACR122-specific file
 usbSCL3711.prototype.acr122_reset_to_good_state = function(cb) {
   var self = this;
@@ -317,12 +318,18 @@ usbSCL3711.prototype.acr122_reset_to_good_state = function(cb) {
 
   self.exchange(new Uint8Array([
     0x00, 0x00, 0xff, 0x00, 0xff, 0x00]).buffer, 1, function(rc, data) {
+      if (rc) {
+        console.warn("[FIXME] acr122_reset_to_good_state: rc = " + rc);
+      }
       // icc_power_on
       self.exchange(new Uint8Array([
         0x62, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00]).buffer,
         10, function(rc, data) {
+          if (rc) {
+            console.warn("[FIXME] icc_power_on: rc = " + rc);
+          }
           console.log("[DEBUG] icc_power_on: turn on the device power");
-          if (callback) window.setTimeout(function() { callback(); }, 100);
+          if (callback) window.setTimeout(function() { callback(0); }, 100);
       });
   });
 }
@@ -492,8 +499,16 @@ usbSCL3711.prototype.open = function(which, cb, onclose) {
 
     /* extra configuration for ACR122 */
     if (self.dev && self.dev.acr122) {
-      self.acr122_reset_to_good_state(function() {
-        self.acr122_set_buzzer(false, function() {
+      self.acr122_reset_to_good_state(function(rc) {
+        if (rc) {
+          console.error("[ERROR] acr122_reset_to_good_state() returns " + rc);
+          return callback ? callback(rc) : null;
+        }
+        self.acr122_set_buzzer(false, function(rc) {
+          if (rc) {
+            console.error("[ERROR] acr122_reset_to_good_state() returns " + rc);
+            return callback ? callback(rc) : null;
+          }
           if (callback) callback(result);
         });
       });
