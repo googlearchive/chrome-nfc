@@ -594,6 +594,8 @@ function NFC() {
         device.vendorId = device.dev.dev.vendorId;
         device.productId = device.dev.dev.productId;
         cb([device]);
+      }, function() {
+        console.debug("device.onclose() is called.");
       });
     }, 1E3);
   }, "read":function(device, options, cb) {
@@ -743,26 +745,9 @@ devManager.prototype.closeAll = function(cb) {
   for (var i = 0;i < d.length;++i) {
     d[i].close();
   }
-  chrome.usb.findDevices({"vendorId":1254, "productId":21905}, function(d) {
-    if (!d) {
-      return;
-    }
-    for (var i = 0;i < d.length;++i) {
-      chrome.usb.closeDevice(d[i]);
-    }
-  });
-  chrome.usb.findDevices({"vendorId":1839, "productId":8704}, function(d) {
-    if (!d) {
-      return;
-    }
-    for (var i = 0;i < d.length;++i) {
-      chrome.usb.closeDevice(d[i]);
-    }
-  });
   if (cb) {
     cb();
   }
-  self.devs = [];
 };
 devManager.prototype.enumerate = function(cb) {
   var self = this;

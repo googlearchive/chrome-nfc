@@ -70,6 +70,8 @@ function NFC() {
           device.productId = device.dev.dev.productId;
 
           cb([device]);
+        }, function() {
+          console.debug("device.onclose() is called.");
         });
       }, 1000);
     },

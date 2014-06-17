@@ -86,30 +86,9 @@ devManager.prototype.closeAll = function(cb) {
     d[i].close();
   }
 
-  // Next, find current devices and explictly close them.
-  chrome.usb.findDevices({'vendorId': 0x04e6, 'productId': 0x5591},
-      function(d) {
-        if (!d) return;
-          for(var i = 0; i < d.length; ++i) {
-            chrome.usb.closeDevice(d[i]);
-        }
-    });
-  chrome.usb.findDevices({'vendorId': 0x072f, 'productId': 0x2200},
-      function (d) {
-        if (!d) return;
-          for(var i = 0; i < d.length; ++i) {
-            chrome.usb.closeDevice(d[i]);
-        }
-    });
-
   if (cb) {
     cb();
   }
-
-  /* TODO(yjlou): Devices should be gracefully removed one by one in
-   *              the close() function, instead of rudely removed here.
-   */
-  self.devs = [];
 };
 
 // When an app needs a device, it must claim before use (so that kernel
@@ -173,7 +152,6 @@ devManager.prototype.enumerate = function(cb) {
     }
   };
   /* end of enumerated() */
-
 
   if (this.devs.length != 0) {
     // Already have devices. Report number right away.
