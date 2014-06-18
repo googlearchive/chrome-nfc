@@ -190,12 +190,21 @@ TT2.prototype.read = function(device, cb) {
  *   ndef - Uint8Array
  */
 TT2.prototype.compose = function(ndef) {
-  var max_len = 64 - 16;
-  /*
-   * TODO: CCn bytes of MF0ICU1 (MIFARE Ultralight) are OTP(One Time Program).
-   *       Thus, we set the maximum available size (48 bytes).
-   */
-  var blen = 48 / 8;
+  if ((ndef.length + 16 /* tt2_header */
+                   + 2  /* ndef_tlv */
+                   + 1  /* terminator_tlv */) > 64) {
+    /*
+     * CC bytes of MF0ICU2 (MIFARE Ultralight-C) is OTP (One Time Program).
+     * Set to maximum available size (144 bytes).
+     */
+    var blen = 144 / 8;
+  } else {
+    /*
+     * CC bytes of MF0ICU1 (MIFARE Ultralight) is OTP (One Time Program).
+     * Set to maximum available size (48 bytes).
+     */
+    var blen = 48 / 8;
+  }
 
   var tt2_header = new Uint8Array([
     0x00, 0x00, 0x00, 0x00,  /* UID0, UID1, UID2, Internal0 */
@@ -229,8 +238,14 @@ TT2.prototype.write = function(device, ndef, cb) {
 
   /* TODO: check memory size according to CC value */
   if (card_blknum > (64 / 4)) {
-    console.log("write_tt2() card is too big (max: 64 bytes): " + card.length);
-    return callback(0xbbb);
+    console.warn("write_tt2() card length: " + card.length +
+                 " is larger than 64 bytes. Try to write as Ultralight-C.");
+    if (card_blknum > (192 / 4)) {
+      console.error("write_tt2() card length: " + card.length +
+                    " is larger than 192 bytes (more than Ultralight-C" +
+                    " can provide).");
+      return callback(0xbbb);
+    }
   }
 
   function write_block(card, block_no) {

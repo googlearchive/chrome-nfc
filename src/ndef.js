@@ -144,8 +144,11 @@ NDEF.prototype.parse = function(raw, cb) {
     case 0x02:  /* MIME - RFC 2046 */
       ret.push(this.parse_MIME(type, payload));
       break;
+    case 0x04:  /* NFC RTD - so called External type */
+      ret.push(this.parse_ExternalType(type, payload));
+      break;
     default:
-      console.log("Unsupported TNF: " + TNF);
+      console.error("Unsupported TNF: " + TNF);
       break;
     }
 
@@ -192,8 +195,13 @@ NDEF.prototype.compose = function() {
                 "TYPE": new Uint8Array(UTIL_StringToBytes(entry["mime_type"])),
                 "PAYLOAD": this.compose_MIME(entry["payload"])});
       break;
+    case "AAR":
+      arr.push({"TNF": 4,
+                "TYPE": new Uint8Array(UTIL_StringToBytes('android.com:pkg')),
+                "PAYLOAD": this.compose_AAR(entry["aar"])});
+      break;
     default:
-      console.log("Unsupported RTD type:" + entry["type"]);
+      console.error("Unsupported RTD type:" + entry["type"]);
       break;
     }
   }
@@ -219,6 +227,7 @@ NDEF.prototype.compose = function() {
  *     "Text": RTD Text. Require: "encoding", "lang" and "text".
  *     "URI": RTD URI. Require: "uri".
  *     "MIME": RFC 2046 media types. Require: "mime_type" and "payload".
+ *     "AAR": Android Application Record. Require: "aar".
  *
  * Output:
  *   true for success.
@@ -230,6 +239,8 @@ NDEF.prototype.add = function(d) {
     d["type"] = "URI";
   } else if ("text" in d) {
     d["type"] = "TEXT";
+  } else if ("aar" in d) {
+    d["type"] = "AAR";
   } else if ("payload" in d) {
     d["type"] = "MIME";
   }
@@ -264,8 +275,15 @@ NDEF.prototype.add = function(d) {
       return true;
     }
 
+  case "AAR":
+    if ("aar" in d) {
+      this.ndef.push(d);
+      return true;
+    }
+    break;
+
   default:
-    console.log("Unsupported RTD type:" + entry["type"]);
+    console.log("Unsupported RTD type:" + d["type"]);
     break;
   }
   return false;
@@ -315,6 +333,47 @@ NDEF.prototype.parse_MIME = function(mime_type, payload) {
  *   rtd_text  -- Uint8Array.
  */
 NDEF.prototype.compose_MIME = function(payload) {
+  return new Uint8Array(UTIL_StringToBytes(payload));
+}
+
+
+/*
+ * Input:
+ *   payload  -- Uint8Array.
+ *
+ * Output:
+ *   JS structure
+ */
+NDEF.prototype.parse_AAR = function(payload) {
+  return {"type": "AAR",
+          "payload": UTIL_BytesToString(payload)};
+}
+
+/*
+ * Input:
+ *   type     -- Uint8Array.
+ *   payload  -- Uint8Array.
+ *
+ * Output:
+ *   JS structure
+ */
+NDEF.prototype.parse_ExternalType = function(type, payload) {
+  if (UTIL_BytesToString(type) == "android.com:pkg")
+    return this.parse_AAR(payload);
+  else
+    return {"type": type,
+            "payload": UTIL_BytesToString(payload)};
+}
+
+
+/*
+ * Input:
+ *   payload: string.
+ *
+ * Output:
+ *   Uint8Array.
+ */
+NDEF.prototype.compose_AAR = function(payload) {
   return new Uint8Array(UTIL_StringToBytes(payload));
 }
 

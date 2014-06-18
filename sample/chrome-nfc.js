@@ -422,8 +422,11 @@ NDEF.prototype.parse = function(raw, cb) {
       case 2:
         ret.push(this.parse_MIME(type, payload));
         break;
+      case 4:
+        ret.push(this.parse_ExternalType(type, payload));
+        break;
       default:
-        console.log("Unsupported TNF: " + TNF);
+        console.error("Unsupported TNF: " + TNF);
         break;
     }
     i = payload_off + payload_len - 1;
@@ -453,8 +456,11 @@ NDEF.prototype.compose = function() {
       case "MIME":
         arr.push({"TNF":2, "TYPE":new Uint8Array(UTIL_StringToBytes(entry["mime_type"])), "PAYLOAD":this.compose_MIME(entry["payload"])});
         break;
+      case "AAR":
+        arr.push({"TNF":4, "TYPE":new Uint8Array(UTIL_StringToBytes("android.com:pkg")), "PAYLOAD":this.compose_AAR(entry["aar"])});
+        break;
       default:
-        console.log("Unsupported RTD type:" + entry["type"]);
+        console.error("Unsupported RTD type:" + entry["type"]);
         break;
     }
   }
@@ -477,8 +483,12 @@ NDEF.prototype.add = function(d) {
     if ("text" in d) {
       d["type"] = "TEXT";
     } else {
-      if ("payload" in d) {
-        d["type"] = "MIME";
+      if ("aar" in d) {
+        d["type"] = "AAR";
+      } else {
+        if ("payload" in d) {
+          d["type"] = "MIME";
+        }
       }
     }
   }
@@ -509,8 +519,14 @@ NDEF.prototype.add = function(d) {
         return true;
       }
     ;
+    case "AAR":
+      if ("aar" in d) {
+        this.ndef.push(d);
+        return true;
+      }
+      break;
     default:
-      console.log("Unsupported RTD type:" + entry["type"]);
+      console.log("Unsupported RTD type:" + d["type"]);
       break;
   }
   return false;
@@ -529,6 +545,19 @@ NDEF.prototype.parse_MIME = function(mime_type, payload) {
   return{"type":"MIME", "mime_type":UTIL_BytesToString(mime_type), "payload":UTIL_BytesToString(payload)};
 };
 NDEF.prototype.compose_MIME = function(payload) {
+  return new Uint8Array(UTIL_StringToBytes(payload));
+};
+NDEF.prototype.parse_AAR = function(payload) {
+  return{"type":"AAR", "payload":UTIL_BytesToString(payload)};
+};
+NDEF.prototype.parse_ExternalType = function(type, payload) {
+  if (UTIL_BytesToString(type) == "android.com:pkg") {
+    return this.parse_AAR(payload);
+  } else {
+    return{"type":type, "payload":UTIL_BytesToString(payload)};
+  }
+};
+NDEF.prototype.compose_AAR = function(payload) {
   return new Uint8Array(UTIL_StringToBytes(payload));
 };
 NDEF.prototype.parse_RTD_TEXT = function(rtd_text) {
@@ -1714,8 +1743,11 @@ TT2.prototype.read = function(device, cb) {
   device.read_block(0, poll_block0);
 };
 TT2.prototype.compose = function(ndef) {
-  var max_len = 64 - 16;
-  var blen = 48 / 8;
+  if (ndef.length + 16 + 2 + 1 > 64) {
+    var blen = 144 / 8
+  } else {
+    var blen = 48 / 8
+  }
   var tt2_header = new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 225, 16, blen, 0]);
   var ndef_tlv = new Uint8Array([3, ndef.length]);
   var terminator_tlv = new Uint8Array([254]);
@@ -1731,8 +1763,11 @@ TT2.prototype.write = function(device, ndef, cb) {
   var card = self.compose(new Uint8Array(ndef));
   var card_blknum = Math.floor((card.length + 3) / 4);
   if (card_blknum > 64 / 4) {
-    console.log("write_tt2() card is too big (max: 64 bytes): " + card.length);
-    return callback(3003);
+    console.warn("write_tt2() card length: " + card.length + " is larger than 64 bytes. Try to write as Ultralight-C.");
+    if (card_blknum > 192 / 4) {
+      console.error("write_tt2() card length: " + card.length + " is larger than 192 bytes (more than Ultralight-C" + " can provide).");
+      return callback(3003);
+    }
   }
   function write_block(card, block_no) {
     if (block_no >= card_blknum) {

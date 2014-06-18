@@ -54,7 +54,10 @@ chrome.nfc.findDevices(function(devices) {
 chrome.nfc.findDevices(function(devices) {
   var device = devices[0];
   chrome.nfc.read(device, {}, function(type, ndef) {
-    var text = ndef.ndef[0]["text"];
+    console.lof(ndef);
+    var uri = ndef.ndef[0]["uri"];
+    console.log(uri);
+    var text = ndef.ndef[1]["text"];
     console.log(text);
   });
 });
@@ -68,6 +71,7 @@ chrome.nfc.findDevices(function(devices) {
   var ndef = [
     {"text": "Chromium.org website" },
     {"uri": "http://chromium.org" },
+    {"aar": "com.google.samples.apps.iosched" },
   ];
   chrome.nfc.write(device, {"ndef": ndef}, function(rc) {
     if (!rc) {
