@@ -45,7 +45,7 @@ TT2.prototype.detect_type_name = function(cb) {
         self.type_name = "Mifare Ultralight C";
       }
 
-      console.log("[DEBUG] TT2.type_name = " + self.type_name);
+      console.debug("[DEBUG] TT2.type_name = " + self.type_name);
       if (callback) callback();
     });
   }
@@ -106,7 +106,7 @@ TT2.prototype.read = function(device, cb) {
             break;
 
           case 0x01:  /* Lock Control TLV */
-            console.debug("Lock Control TLV");
+            console.debug("Found Lock Control TLV");
 
             /* TODO: refactor and share code with Memory Control TLV */
             var PageAddr = card[i + 2] >> 4;
@@ -117,7 +117,7 @@ TT2.prototype.read = function(device, cb) {
             var BytesLockedPerLockBit = card[i + 4] >> 4;
 
             console.debug("Lock control: " +
-                " BytesLockedPerLockBit=" + BytesLockedPerLockBit +
+                "BytesLockedPerLockBit=" + BytesLockedPerLockBit +
                 ", Size=" + Size);
 
             var ByteAddr = PageAddr * BytesPerPage + ByteOffset;
@@ -166,6 +166,7 @@ TT2.prototype.read = function(device, cb) {
             }
             return callback(0,
                 new Uint8Array(card.subarray(i + 2, i + 2 + len)).buffer);
+
           default:
             console.error("Unknown Type [" + card[i] + "]");
             return;
@@ -190,6 +191,10 @@ TT2.prototype.read = function(device, cb) {
  *   ndef - Uint8Array
  */
 TT2.prototype.compose = function(ndef) {
+
+  var blen;  // CC2
+  var need_lock_control_tlv = 0;
+
   if ((ndef.length + 16 /* tt2_header */
                    + 2  /* ndef_tlv */
                    + 1  /* terminator_tlv */) > 64) {
@@ -197,13 +202,16 @@ TT2.prototype.compose = function(ndef) {
      * CC bytes of MF0ICU2 (MIFARE Ultralight-C) is OTP (One Time Program).
      * Set to maximum available size (144 bytes).
      */
-    var blen = 144 / 8;
+    blen = 144 / 8;
+    need_lock_control_tlv = 1;
+
+    /* TODO: check if the ndef.length + overhead are larger than card */
   } else {
     /*
      * CC bytes of MF0ICU1 (MIFARE Ultralight) is OTP (One Time Program).
      * Set to maximum available size (48 bytes).
      */
-    var blen = 48 / 8;
+    blen = 48 / 8;
   }
 
   var tt2_header = new Uint8Array([
@@ -212,6 +220,17 @@ TT2.prototype.compose = function(ndef) {
     0x00, 0x00, 0x00, 0x00,  /* Internal1, Internal2, Lock0, Lock1 */
     0xe1, 0x10, blen, 0x00   /* CC0, CC1, CC2(len), CC3 */
   ]);
+
+  var lock_control_tlv = (need_lock_control_tlv) ?
+    new Uint8Array([
+      /*T*/ 0x01,
+      /*L*/ 0x03,
+      /*V*/ 0xA0, 0x10, 0x44  /* BytesLockedPerLockBit=4, Size=16
+                               * ByteAddr=160
+                               */
+    ]) :
+    new Uint8Array([]);
+
   var ndef_tlv = new Uint8Array([
     0x03, ndef.length        /* NDEF Message TLV */
   ]);
@@ -219,9 +238,10 @@ TT2.prototype.compose = function(ndef) {
     0xfe
   ]);
   var ret = UTIL_concat(tt2_header, 
+            UTIL_concat(lock_control_tlv,
             UTIL_concat(ndef_tlv,
             UTIL_concat(new Uint8Array(ndef),
-                        terminator_tlv)));
+                        terminator_tlv))));
   return ret;
 }
 

@@ -965,9 +965,6 @@ usbSCL3711.prototype.read = function(timeout, cb) {
     }
     console.log(UTIL_fmt("[" + self.cid.toString(16) + "] timeout!"));
     tid = null;
-    dev_manager.closeAll(function() {
-      schedule_cb(-5);
-    });
   }
   function read_frame() {
     if (!callback || !tid) {
@@ -1625,7 +1622,7 @@ TT2.prototype.detect_type_name = function(cb) {
       } else {
         self.type_name = "Mifare Ultralight C";
       }
-      console.log("[DEBUG] TT2.type_name = " + self.type_name);
+      console.debug("[DEBUG] TT2.type_name = " + self.type_name);
       if (callback) {
         callback();
       }
@@ -1676,7 +1673,7 @@ TT2.prototype.read = function(device, cb) {
               i++;
               break;
             case 1:
-              console.debug("Lock Control TLV");
+              console.debug("Found Lock Control TLV");
               var PageAddr = card[i + 2] >> 4;
               var ByteOffset = card[i + 2] & 15;
               var Size = card[i + 3];
@@ -1685,7 +1682,7 @@ TT2.prototype.read = function(device, cb) {
               }
               var BytesPerPage = Math.pow(2, card[i + 4] & 15);
               var BytesLockedPerLockBit = card[i + 4] >> 4;
-              console.debug("Lock control: " + " BytesLockedPerLockBit=" + BytesLockedPerLockBit + ", Size=" + Size);
+              console.debug("Lock control: " + "BytesLockedPerLockBit=" + BytesLockedPerLockBit + ", Size=" + Size);
               var ByteAddr = PageAddr * BytesPerPage + ByteOffset;
               console.info("Lock control: ByteAddr=" + ByteAddr);
               console.info("  Locked bytes:");
@@ -1743,15 +1740,19 @@ TT2.prototype.read = function(device, cb) {
   device.read_block(0, poll_block0);
 };
 TT2.prototype.compose = function(ndef) {
+  var blen;
+  var need_lock_control_tlv = 0;
   if (ndef.length + 16 + 2 + 1 > 64) {
-    var blen = 144 / 8
+    blen = 144 / 8;
+    need_lock_control_tlv = 1;
   } else {
-    var blen = 48 / 8
+    blen = 48 / 8;
   }
   var tt2_header = new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 225, 16, blen, 0]);
+  var lock_control_tlv = need_lock_control_tlv ? new Uint8Array([1, 3, 160, 16, 68]) : new Uint8Array([]);
   var ndef_tlv = new Uint8Array([3, ndef.length]);
   var terminator_tlv = new Uint8Array([254]);
-  var ret = UTIL_concat(tt2_header, UTIL_concat(ndef_tlv, UTIL_concat(new Uint8Array(ndef), terminator_tlv)));
+  var ret = UTIL_concat(tt2_header, UTIL_concat(lock_control_tlv, UTIL_concat(ndef_tlv, UTIL_concat(new Uint8Array(ndef), terminator_tlv))));
   return ret;
 };
 TT2.prototype.write = function(device, ndef, cb) {
