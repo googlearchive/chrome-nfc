@@ -63,7 +63,7 @@ function B64_decode(string) {
   for (var i = 0;i < string.length;++i) {
     var c = string.charCodeAt(i);
     if (c < 32 || c > 127 || !B64_inmap[c - 32]) {
-      return[];
+      return [];
     }
     accu <<= 6;
     accu |= B64_inmap[c - 32] - 1;
@@ -542,19 +542,19 @@ NDEF.prototype.parse_RTD = function(type, rtd) {
   }
 };
 NDEF.prototype.parse_MIME = function(mime_type, payload) {
-  return{"type":"MIME", "mime_type":UTIL_BytesToString(mime_type), "payload":UTIL_BytesToString(payload)};
+  return {"type":"MIME", "mime_type":UTIL_BytesToString(mime_type), "payload":UTIL_BytesToString(payload)};
 };
 NDEF.prototype.compose_MIME = function(payload) {
   return new Uint8Array(UTIL_StringToBytes(payload));
 };
 NDEF.prototype.parse_AAR = function(payload) {
-  return{"type":"AAR", "payload":UTIL_BytesToString(payload)};
+  return {"type":"AAR", "payload":UTIL_BytesToString(payload)};
 };
 NDEF.prototype.parse_ExternalType = function(type, payload) {
   if (UTIL_BytesToString(type) == "android.com:pkg") {
     return this.parse_AAR(payload);
   } else {
-    return{"type":type, "payload":UTIL_BytesToString(payload)};
+    return {"type":type, "payload":UTIL_BytesToString(payload)};
   }
 };
 NDEF.prototype.compose_AAR = function(payload) {
@@ -565,7 +565,7 @@ NDEF.prototype.parse_RTD_TEXT = function(rtd_text) {
   var lang_len = rtd_text[0] & 63;
   var lang = rtd_text.subarray(1, 1 + lang_len);
   var text = rtd_text.subarray(1 + lang_len, rtd_text.length);
-  return{"type":"Text", "encoding":utf16 ? "utf16" : "utf8", "lang":UTIL_BytesToString(lang), "text":UTIL_BytesToString(text)};
+  return {"type":"Text", "encoding":utf16 ? "utf16" : "utf8", "lang":UTIL_BytesToString(lang), "text":UTIL_BytesToString(text)};
 };
 NDEF.prototype.compose_RTD_TEXT = function(lang, text) {
   var l = lang.length;
@@ -573,7 +573,7 @@ NDEF.prototype.compose_RTD_TEXT = function(lang, text) {
   return new Uint8Array([l].concat(UTIL_StringToBytes(lang.substring(0, l))).concat(UTIL_StringToBytes(text)));
 };
 NDEF.prototype.parse_RTD_URI = function(rtd_uri) {
-  return{"type":"URI", "uri":this.prepending[rtd_uri[0]] + UTIL_BytesToString(rtd_uri.subarray(1, rtd_uri.length))};
+  return {"type":"URI", "uri":this.prepending[rtd_uri[0]] + UTIL_BytesToString(rtd_uri.subarray(1, rtd_uri.length))};
 };
 NDEF.prototype.compose_RTD_URI = function(uri) {
   var longest = -1;
@@ -1254,8 +1254,7 @@ usbSCL3711.prototype.open = function(which, cb, onclose) {
         }
         self.acr122_set_buzzer(false, function(rc) {
           if (rc) {
-            console.error("[ERROR] acr122_reset_to_good_state() returns " + rc);
-            return callback ? callback(rc) : null;
+            console.warn("[FIXME] acr122_set_buzzer: rc = " + rc);
           }
           if (callback) {
             callback(result);
@@ -1654,7 +1653,7 @@ TT2.prototype.read = function(device, cb) {
       return false;
     }
     function readable(cc3) {
-      return(cc3 & 240) == 0 ? true : false;
+      return (cc3 & 240) == 0 ? true : false;
     }
     if (CC0 != 225 || !check_ver(CC1) || !readable(CC3)) {
       console.log("UNsupported type 2 tag: CC0=" + CC0 + ", CC1=" + CC1 + ", CC3=" + CC3);
@@ -1940,7 +1939,7 @@ function UTIL_BytesToHexWithSeparator(b, sep) {
     hexrep[i * stride + stride - 2] = hexchars.charAt(b[i] >> 4 & 15);
     hexrep[i * stride + stride - 1] = hexchars.charAt(b[i] & 15);
   }
-  return(sep ? hexrep.slice(1) : hexrep).join("");
+  return (sep ? hexrep.slice(1) : hexrep).join("");
 }
 function UTIL_HexToBytes(h) {
   var hexchars = "0123456789ABCDEFabcdef";
@@ -1984,7 +1983,7 @@ function UTIL_ltArrays(a, b) {
   return false;
 }
 function UTIL_geArrays(a, b) {
-  return!UTIL_ltArrays(a, b);
+  return !UTIL_ltArrays(a, b);
 }
 function UTIL_getRandom(a) {
   var tmp = new Array(a);

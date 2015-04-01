@@ -497,8 +497,7 @@ usbSCL3711.prototype.open = function(which, cb, onclose) {
         }
         self.acr122_set_buzzer(false, function(rc) {
           if (rc) {
-            console.error("[ERROR] acr122_reset_to_good_state() returns " + rc);
-            return callback ? callback(rc) : null;
+            console.warn("[FIXME] acr122_set_buzzer: rc = " + rc);
           }
           if (callback) callback(result);
         });
