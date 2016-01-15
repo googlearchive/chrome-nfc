@@ -54,7 +54,7 @@ chrome.nfc.findDevices(function(devices) {
 chrome.nfc.findDevices(function(devices) {
   var device = devices[0];
   chrome.nfc.read(device, {}, function(type, ndef) {
-    console.lof(ndef);
+    console.log(ndef);
     var uri = ndef.ndef[0]["uri"];
     console.log(uri);
     var text = ndef.ndef[1]["text"];
